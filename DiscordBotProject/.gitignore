@@ -6,3 +6,4 @@
 
 ### Sensitive Data ###
 src/main/resources/token.txt
+build/resources/main/token.txt
