@@ -23,3 +23,5 @@ out/
 *.ipr
 *.iws
 
+/build/
+/build/resources/main/
