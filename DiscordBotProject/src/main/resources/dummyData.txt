@@ -1,0 +1,4 @@
+Dummy data1=150,35,115
+Dummy data=1,315,230
+FluffyWin 🍵=315,315,222
+Dummy data2=10,45,111

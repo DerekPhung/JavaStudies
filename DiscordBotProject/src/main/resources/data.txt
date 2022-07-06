@@ -1,3 +1,2 @@
-TubbieTubTub=315
-King PlasmaG=495
-FluffyWin 🍵=405
+TubbieTubTub=335,295,410
+FluffyWin 🍵=335,315,385

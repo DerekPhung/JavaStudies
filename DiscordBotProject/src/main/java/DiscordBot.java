@@ -21,6 +21,7 @@ public class DiscordBot extends ListenerAdapter {
 
     static Path tokenPath = Paths.get("src/main/resources/token.txt");
     static Path dataLog = Paths.get("src/main/resources/data.txt");
+    static Path testerLog = Paths.get("src/main/resources/dummyData.txt");
     Charset utf8 = StandardCharsets.UTF_8;
 
 
@@ -66,59 +67,147 @@ public class DiscordBot extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
-        ArrayList<String> data = new ArrayList<>( readFromFile(dataLog) );
-        HashMap<String, Integer> dataMap = new HashMap<>();
-        HashMap<String, HashMap<String,Integer> > fullDataMap = new HashMap<>();
-
-        for (String e : data) {
-            dataMap.put(e.split("=")[0], Integer.parseInt(e.split("=")[1]));
-        }
-
-        int weight = 0;
 
         String message = event.getMessage().getContentRaw();
         String username = event.getAuthor().getName();
         System.out.println(message);
 
-        // guard clause
+        // guard clause to check prefix then removing prefix
         if( !message.startsWith(">") ) return;
-
         message = message.substring(1);
 
+        //bot commands
         if (message.toLowerCase().startsWith("bench:")){
-
-            ArrayList<String> listToWrite = new ArrayList<>();
-
-            try {
-                weight = Integer.parseInt(message.split(" ")[1]);
-
-            } catch (NumberFormatException e){
-                event.getMessage().reply("Bad Human! Bad!").queue();
-            }
-
-                dataMap.put(username,weight);
-
-                for (Map.Entry<String, Integer> entry : dataMap.entrySet()) {
-                    listToWrite.add(entry.getKey() + "=" + entry.getValue());
-                }
-
-                try {
-                    writeToFile(dataLog, listToWrite);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                System.out.println(username + ": " + weight);
-                System.out.println(dataMap);
-
-
+            event.getMessage().reply(weightUpdate("bench", username, message)).queue();
+        }
+        if (message.toLowerCase().startsWith("squat:")){
+            event.getMessage().reply(weightUpdate("squat", username, message)).queue();
+        }
+        if (message.toLowerCase().startsWith("deadlift:")){
+            event.getMessage().reply(weightUpdate("deadlift", username, message)).queue();
         }
 
-        if(message.startsWith("checkBench")){
-            event.getMessage().reply("Bench: " + dataMap.get(username)).queue();
+        if(message.startsWith("check ")){
+            try{
+                String otherUser = message.split(" ")[1];
+                event.getMessage().reply(weightUpdate("checkStats",otherUser,"checkStats")).queue();
+                return;
+            }catch (Exception e){
+                event.getMessage().reply("Bad Human! Bad!").queue();
+            }
+        }
+
+        if(message.startsWith("check")){
+            event.getMessage().reply(weightUpdate("checkStats",username,message)).queue();
+        }
+        if(message.equalsIgnoreCase("postall")){
+            event.getMessage().reply(weightUpdate("all",username,message)).queue();
         }
     }
 
+    // method to take care of certain commands
+    public String weightUpdate(String category, String username, String message){
+        int lift = -1;
+        if(category.equals("squat")){lift=0;}
+        if(category.equals("bench")){lift=1;}
+        if(category.equals("deadlift")){lift=2;}
+
+        int squat = 0;
+        int bench = 0;
+        int deadlift = 0;
+        int weightInput = 0;
+
+        HashMap<String, Integer> dataMap = new HashMap<>();
+
+        //experiment hashmap below
+        HashMap<String, String> fullDataMap = new HashMap<>();
+
+        for(String e : readFromFile(dataLog)){
+            String name = e.split("=")[0];
+            String allData = e.split("=")[1];
+            fullDataMap.put(name,allData);
+        }
+
+        if(!fullDataMap.containsKey(username)) {
+            fullDataMap.put(username,squat + "," + bench + "," + deadlift);
+        }
+
+        squat = Integer.parseInt( fullDataMap.get(username).split(",")[0] );
+        bench = Integer.parseInt( fullDataMap.get(username).split(",")[1] );
+        deadlift = Integer.parseInt( fullDataMap.get(username).split(",")[2] );
+
+        //uses the checkStats method
+        if(category.equals("checkStats")){
+            return checkStats(username,message,squat,bench,deadlift);
+        }
+        // looking at everyone
+        if(category.equals("all")){
+            String all = "";
+            for (Map.Entry<String, String> entry : fullDataMap.entrySet()) {
+                squat = Integer.parseInt( entry.getValue().split(",")[0] );
+                bench = Integer.parseInt( entry.getValue().split(",")[1] );
+                deadlift = Integer.parseInt( entry.getValue().split(",")[2] );
+                all += String.format("%s\n  Squat: %s\n  Bench: %s\n  Deadlift: %s\n   Total: %s\n\n",
+                        entry.getKey(),squat,bench,deadlift,(squat+bench+deadlift));
+            }
+            return all;
+        }
+
+        //catching user mistakes
+        try {
+            weightInput = Integer.parseInt(message.split(" ")[1]);
+        } catch (Exception e){
+            return "Bad Human! Bad!";
+        }
+
+        //update specific category
+        switch (lift){
+            case 0: squat = weightInput; break;
+            case 1: bench = weightInput; break;
+            case 2: deadlift = weightInput; break;
+            default: return "something went wrong";
+        }
+
+        //adding data before the database
+        String allWeights = squat + "," + bench + "," + deadlift;
+        fullDataMap.put(username,allWeights);
+
+        //create arraylist then add Hashmap into it to be written into the textfile
+        ArrayList<String> neoListToWrite = new ArrayList<>();
+        for (Map.Entry<String, String> entry : fullDataMap.entrySet()) {
+            neoListToWrite.add(entry.getKey()+"="+entry.getValue());
+        }
+
+        try{
+            writeToFile(dataLog, neoListToWrite);
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
+        System.out.println(username + ": " + weightInput);
+        System.out.println(dataMap);
+
+        return "Database has been updated.";
+    }
+
+    //for checking stats
+    public String checkStats(String username, String message, int squat, int bench, int deadlift){
+        int total = (squat+bench+deadlift);
+        switch(message.toLowerCase()){
+            case"checkstats":
+                return String.format("%s\nSquat is: %s\nBench is: %s\nDeadlift is: %s\nTotal is: %s",
+                        username,squat,bench,deadlift,total);
+            case "checkbench":
+                return "Bench Max is " + bench;
+            case "checksquat":
+                return "Squat Max is " + squat;
+            case "checkdeadlift":
+                return "Deadlift Max is " + deadlift;
+            case "checktotal":
+                return "Total max is " + total;
+        }
+        return "Doesn't work yet!";
+    }
 
 
 }
