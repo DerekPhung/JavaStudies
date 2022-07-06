@@ -32,7 +32,6 @@ public class ReadWriteStudies {
             System.out.println("Error: readFromFile failed");
             return new ArrayList<>();
         }
-
     }
 
     //write to file
