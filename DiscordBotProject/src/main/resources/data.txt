@@ -1,2 +1,6 @@
-TubbieTubTub=335,295,410
+Hamtaro42=185,165,245
+TubbieTubTub=335,315,410
+CapriSunTheGawd=555,345,620
+Hubris=205,125,-5000
+ChckenNuggetz=425,290,425
 FluffyWin 🍵=335,315,385

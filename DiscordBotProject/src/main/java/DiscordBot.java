@@ -77,6 +77,12 @@ public class DiscordBot extends ListenerAdapter {
         message = message.substring(1);
 
         //bot commands
+        if(message.equalsIgnoreCase("help")){
+            event.getMessage().reply(help()).queue();
+        }
+        if(message.equalsIgnoreCase("aboutme")){
+            event.getMessage().reply(aboutMe()).queue();
+        }
         if (message.toLowerCase().startsWith("bench:")){
             event.getMessage().reply(weightUpdate("bench", username, message)).queue();
         }
@@ -207,6 +213,30 @@ public class DiscordBot extends ListenerAdapter {
                 return "Total max is " + total;
         }
         return "Doesn't work yet!";
+    }
+
+    public String help(){
+        return "```prefix is > \n" +
+                "(aboutMe) to read random stuff\n" +
+                "(bench: number) your bench to update your bench\n" +
+                "(squat: number) your squat to update your squat\n" +
+                "(deadlift: number) your deadlift to udpate your deadlift\n" +
+                "(checkStats) to check your own stats\n" +
+                "(checkBench) to check your bench\n" +
+                "(checkSquat) to check your squats\n" +
+                "(checkDeadlift) to check your deadlift\n" +
+                "(checkTotal) to check your total\n" +
+                "(check username) to check someone's stats\n" +
+                "(postAll) to show everybody in the database```";
+    }
+
+    public String aboutMe(){
+        return "Yo!\n" +
+                "So this bot is made by Fluffy and Tubbie\n" +
+                "currently the bot only have buff beef boys functionality in mind\n" +
+                "you can contact either Fluffywin or TubbieTubTub for more functionality\n" +
+                "if the bot is down then that means I finally turned off my computer\n" +
+                "or someone crashed the bot while I am away from the computer";
     }
 
 
