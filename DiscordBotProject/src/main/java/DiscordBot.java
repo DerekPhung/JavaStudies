@@ -1,13 +1,11 @@
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 
 import javax.security.auth.login.LoginException;
-import javax.swing.*;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -19,15 +17,24 @@ import java.util.*;
 
 public class DiscordBot extends ListenerAdapter {
 
+
+    HashMap<String, String> fullDataMap = new HashMap<>();
+
+    ArrayList<Lifter> lifterList = new ArrayList<>();
+
     static Path tokenPath = Paths.get("src/main/resources/token.txt");
     static Path dataLog = Paths.get("src/main/resources/data.txt");
-    static Path testerLog = Paths.get("src/main/resources/dummyData.txt");
     Charset utf8 = StandardCharsets.UTF_8;
 
 
-    public void createAFile(Path newPath) throws IOException {
+    // if a file doesnt exist it will create a file
+    public void createAFile(Path newPath) {
         if( Files.exists(newPath) ) return;
+        try {
             Files.createFile(newPath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     // reads from file
@@ -42,7 +49,7 @@ public class DiscordBot extends ListenerAdapter {
     }
 
     //write to file
-    public void writeToFile(Path newPath, ArrayList<String> list) throws IOException {
+    public void writeToFile(Path newPath, ArrayList<String> list) {
         createAFile(newPath);
         try {
             Files.write(
@@ -55,6 +62,7 @@ public class DiscordBot extends ListenerAdapter {
         }
     }
 
+    //main
     public static void main(String[] args) throws LoginException {
 
         String token = readFromFile(tokenPath).get(0);
@@ -63,6 +71,22 @@ public class DiscordBot extends ListenerAdapter {
                 .setActivity(Activity.watching("Buff Beef Boys"))
                 .addEventListeners(new DiscordBot())
                 .build();
+    }
+
+    //
+    public void convertToHashMap(){
+
+        //adding all data from txt to hashmap
+        for(String e : readFromFile(dataLog)){
+            String name = e.split("=")[0];
+            String weightData = e.split("=")[1];
+            lifterList.add( new Lifter( name,
+                    Integer.parseInt(weightData.split(",")[0]),
+                    Integer.parseInt(weightData.split(",")[1]),
+                    Integer.parseInt(weightData.split(",")[2])
+            ));
+        }
+
     }
 
     @Override
@@ -75,6 +99,13 @@ public class DiscordBot extends ListenerAdapter {
         // guard clause to check prefix then removing prefix
         if( !message.startsWith(">") ) return;
         message = message.substring(1);
+
+        //adding all data from txt to hashmap
+        for(String e : readFromFile(dataLog)){
+            String name = e.split("=")[0];
+            String allData = e.split("=")[1];
+            fullDataMap.put(name,allData);
+        }
 
         //bot commands
         if(message.equalsIgnoreCase("help")){
@@ -123,21 +154,13 @@ public class DiscordBot extends ListenerAdapter {
         int deadlift = 0;
         int weightInput = 0;
 
-        HashMap<String, Integer> dataMap = new HashMap<>();
 
-        //experiment hashmap below
-        HashMap<String, String> fullDataMap = new HashMap<>();
-
-        for(String e : readFromFile(dataLog)){
-            String name = e.split("=")[0];
-            String allData = e.split("=")[1];
-            fullDataMap.put(name,allData);
-        }
-
+        //if the username does not exist then we make an entree for him
         if(!fullDataMap.containsKey(username)) {
             fullDataMap.put(username,squat + "," + bench + "," + deadlift);
         }
 
+        //squat, bench , deadlift is set to current user's lift before the update
         squat = Integer.parseInt( fullDataMap.get(username).split(",")[0] );
         bench = Integer.parseInt( fullDataMap.get(username).split(",")[1] );
         deadlift = Integer.parseInt( fullDataMap.get(username).split(",")[2] );
@@ -153,15 +176,17 @@ public class DiscordBot extends ListenerAdapter {
                 squat = Integer.parseInt( entry.getValue().split(",")[0] );
                 bench = Integer.parseInt( entry.getValue().split(",")[1] );
                 deadlift = Integer.parseInt( entry.getValue().split(",")[2] );
-                all += String.format("%s\n  Squat: %s\n  Bench: %s\n  Deadlift: %s\n   Total: %s\n\n",
+                all += String.format("__**%s**__\n  **Squat**: %slb\n  **Bench**: %slb\n  **Deadlift**: %slb\n" +
+                                "   **Total**: %slb\n\n",
                         entry.getKey(),squat,bench,deadlift,(squat+bench+deadlift));
             }
             return all;
         }
 
-        //catching user mistakes
+        //convert user message into a number and then catching any mistakes also guard against absurdity
         try {
             weightInput = Integer.parseInt(message.split(" ")[1]);
+            if(weightInput < 0 || weightInput > 5000) return "Bad Human! Bad!";
         } catch (Exception e){
             return "Bad Human! Bad!";
         }
@@ -174,25 +199,20 @@ public class DiscordBot extends ListenerAdapter {
             default: return "something went wrong";
         }
 
-        //adding data before the database
+        //adding data before the database to update the data
         String allWeights = squat + "," + bench + "," + deadlift;
         fullDataMap.put(username,allWeights);
 
-        //create arraylist then add Hashmap into it to be written into the textfile
+        //create arraylist then through a loop add Hashmap into the arraylist
         ArrayList<String> neoListToWrite = new ArrayList<>();
         for (Map.Entry<String, String> entry : fullDataMap.entrySet()) {
             neoListToWrite.add(entry.getKey()+"="+entry.getValue());
         }
 
-        try{
-            writeToFile(dataLog, neoListToWrite);
-        }catch (IOException e){
-            e.printStackTrace();
-        }
+        //writing the arraylist into textfile
+        writeToFile(dataLog, neoListToWrite);
 
-        System.out.println(username + ": " + weightInput);
-        System.out.println(dataMap);
-
+        //once all process is done send a feedback back to the user
         return "Database has been updated.";
     }
 
@@ -201,20 +221,22 @@ public class DiscordBot extends ListenerAdapter {
         int total = (squat+bench+deadlift);
         switch(message.toLowerCase()){
             case"checkstats":
-                return String.format("%s\nSquat is: %s\nBench is: %s\nDeadlift is: %s\nTotal is: %s",
+                return String.format("__**%s**__\nSquat is: **%s**lb\n" +
+                                "Bench is: **%s**lb\nDeadlift is: **%s**lb\nTotal is: **%s**lb",
                         username,squat,bench,deadlift,total);
             case "checkbench":
-                return "Bench Max is " + bench;
+                return "Bench Max is " + bench + "lb";
             case "checksquat":
-                return "Squat Max is " + squat;
+                return "Squat Max is " + squat + "lb";
             case "checkdeadlift":
-                return "Deadlift Max is " + deadlift;
+                return "Deadlift Max is " + deadlift + "lb";
             case "checktotal":
-                return "Total max is " + total;
+                return "Total max is " + total + "lb";
         }
         return "Doesn't work yet!";
     }
 
+    // a message about each feature the bot has
     public String help(){
         return "```prefix is > \n" +
                 "(aboutMe) to read random stuff\n" +
@@ -230,13 +252,16 @@ public class DiscordBot extends ListenerAdapter {
                 "(postAll) to show everybody in the database```";
     }
 
+    // a message from the bot creator
     public String aboutMe(){
-        return "Yo!\n" +
+        return "```Yo!\n" +
                 "So this bot is made by Fluffy and Tubbie\n" +
-                "currently the bot only have buff beef boys functionality in mind\n" +
-                "you can contact either Fluffywin or TubbieTubTub for more functionality\n" +
+                "currently the bot only have __**Buff Beef Boys**__ functionality in mind\n" +
+                "which means it's main functionality is keeping track of power lifting max\n" +
+                "you can contact either Fluffywin or TubbieTubTub for more functionality/features\n" +
                 "if the bot is down then that means I finally turned off my computer\n" +
-                "or someone crashed the bot while I am away from the computer";
+                "or someone crashed the bot while I am away from the computer\n" +
+                "hopefully when I finally get my hands on raspberry pi but will be up consistently```";
     }
 
 
