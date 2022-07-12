@@ -1,3 +1,4 @@
+rocketinferno=185,135,325
 Hamtaro42=185,165,245
 TubbieTubTub=335,295,410
 CapriSunTheGawd=555,345,620
