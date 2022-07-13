@@ -6,13 +6,8 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 
 import javax.security.auth.login.LoginException;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 public class DiscordBot extends ListenerAdapter {
@@ -20,52 +15,18 @@ public class DiscordBot extends ListenerAdapter {
 
     HashMap<String, String> fullDataMap = new HashMap<>();
 
+    //experimental
     ArrayList<Lifter> lifterList = new ArrayList<>();
-
+    static IOFileSetup io = new IOFileSetup();
     static Path tokenPath = Paths.get("src/main/resources/token.txt");
     static Path dataLog = Paths.get("src/main/resources/data.txt");
-    Charset utf8 = StandardCharsets.UTF_8;
 
 
-    // if a file doesnt exist it will create a file
-    public void createAFile(Path newPath) {
-        if( Files.exists(newPath) ) return;
-        try {
-            Files.createFile(newPath);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    // reads from file
-    public static List<String> readFromFile( Path path ) {
-        try {
-            return Files.readAllLines( path );
-        } catch (IOException e){
-            System.out.println("Error: readFromFile failed");
-            return new ArrayList<>();
-        }
-
-    }
-
-    //write to file
-    public void writeToFile(Path newPath, ArrayList<String> list) {
-        createAFile(newPath);
-        try {
-            Files.write(
-                    newPath, list,
-                    utf8, StandardOpenOption.TRUNCATE_EXISTING
-            );
-        } catch (IOException e){
-            System.out.println("Error: writeToFile failed");
-            e.printStackTrace();
-        }
-    }
 
     //main
     public static void main(String[] args) throws LoginException {
 
-        String token = readFromFile(tokenPath).get(0);
+        String token = io.readFromFile(tokenPath).get(0);
 
         JDA bot = JDABuilder.createDefault(token)
                 .setActivity(Activity.watching("Buff Beef Boys"))
@@ -74,10 +35,10 @@ public class DiscordBot extends ListenerAdapter {
     }
 
     //
-    public void convertToHashMap(){
+    public void convertTObjectArrayList(){
 
         //adding all data from txt to hashmap
-        for(String e : readFromFile(dataLog)){
+        for(String e : io.readFromFile(dataLog)){
             String name = e.split("=")[0];
             String weightData = e.split("=")[1];
             lifterList.add( new Lifter( name,
@@ -101,7 +62,7 @@ public class DiscordBot extends ListenerAdapter {
         message = message.substring(1);
 
         //adding all data from txt to hashmap
-        for(String e : readFromFile(dataLog)){
+        for(String e : io.readFromFile(dataLog)){
             String name = e.split("=")[0];
             String allData = e.split("=")[1];
             fullDataMap.put(name,allData);
@@ -123,6 +84,8 @@ public class DiscordBot extends ListenerAdapter {
         if (message.toLowerCase().startsWith("deadlift:")){
             event.getMessage().reply(weightUpdate("deadlift", username, message)).queue();
         }
+
+
 
         if(message.startsWith("check ")){
             try{
@@ -210,7 +173,7 @@ public class DiscordBot extends ListenerAdapter {
         }
 
         //writing the arraylist into textfile
-        writeToFile(dataLog, neoListToWrite);
+        io.writeToFile(dataLog, neoListToWrite);
 
         //once all process is done send a feedback back to the user
         return "Database has been updated.";
@@ -221,8 +184,8 @@ public class DiscordBot extends ListenerAdapter {
         int total = (squat+bench+deadlift);
         switch(message.toLowerCase()){
             case"checkstats":
-                return String.format("__**%s**__\nSquat is: **%s**lb\n" +
-                                "Bench is: **%s**lb\nDeadlift is: **%s**lb\nTotal is: **%s**lb",
+                return String.format("__**%s**__\n**Squat** is: %slb\n" +
+                                "**Bench** is: %slb\n**Deadlift** is: %slb\n**Total** is: %slb",
                         username,squat,bench,deadlift,total);
             case "checkbench":
                 return "Bench Max is " + bench + "lb";

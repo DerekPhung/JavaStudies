@@ -6,14 +6,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class IOFileSetup {
 
 
-    static Path dataLog = Paths.get("src/main/resources/data.txt");
-    static Path testerLog = Paths.get("src/main/resources/dummyData.txt");
     Charset utf8 = StandardCharsets.UTF_8;
+
 
     // reads from file
     public static List<String> readFromFile(Path path ) {

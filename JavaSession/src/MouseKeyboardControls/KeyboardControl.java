@@ -29,39 +29,65 @@ public class KeyboardControl {
 
     // this is entirely hardcoded
     // going to figure out a way to not hardcode this
-    public static void main(String[] args) throws Exception{
+    public static void main(String[] args) throws AWTException, InterruptedException {
 
-        //punch u i
-        //kick j k
-        var up = KeyEvent.VK_W;
-        var down = KeyEvent.VK_S;
-        var left = KeyEvent.VK_A;
-        var right = KeyEvent.VK_D;
+        KeyboardControl keyboard = new KeyboardControl();
 
-        var btn1 = KeyEvent.VK_U;
-        var btn2 = KeyEvent.VK_I;
-        var btn3 = KeyEvent.VK_J;
-        var btn4 = KeyEvent.VK_K;
+        Thread.sleep(5000);
 
-        KeyboardControl key = new KeyboardControl();
-
-        Thread.sleep(2000);
-
-        for(int i = 0; i < 10; i++) {
-            electrics();
-        }
-
-        //ending taunt
-        Thread.sleep(1000);
-        ai.keyPress(KeyEvent.VK_DELETE);
-        Thread.sleep(100);
-        ai.keyRelease(KeyEvent.VK_DELETE);
 
         System.out.println("done");
 
 
     }
 
+    public void toType(String str){
+        for(int i = 0; i < str.length(); i++){
+            keyTyped(str.charAt(i));
+        }
+    }
+
+    public void keyTyped(char letter){
+        //space in ascii is 32
+        try {
+            if(letter < 91){
+                Thread.sleep(10);
+                ai.keyPress(KeyEvent.VK_SHIFT);
+                ai.keyPress(letter);
+                Thread.sleep(10);
+                ai.keyRelease(letter);
+                ai.keyRelease(KeyEvent.VK_SHIFT);
+            }else {
+                Thread.sleep(10);
+                System.out.println(letter);
+                ai.keyPress(charToVkDecoder(letter));
+                Thread.sleep(10);
+                ai.keyRelease(charToVkDecoder(letter));
+            }
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public int charToVkDecoder(char letter){
+        //vk letter a starts at 65
+        //ascii letter a starts at 97
+        System.out.println(letter);
+        System.out.println(letter-32);
+        return letter - 32;
+    }
+
+    //tekken related
+    static public void powerUp() throws InterruptedException{
+        Thread.sleep(100);
+        ai.keyPress(KeyEvent.VK_DELETE);
+        Thread.sleep(100);
+        ai.keyRelease(KeyEvent.VK_DELETE);
+    }
+
+
+    //tekken related
     static public void electrics() throws InterruptedException {
         //eletric
         //f
@@ -84,27 +110,9 @@ public class KeyboardControl {
         Thread.sleep(500);
     }
 
-    public void SampleCombo15() throws InterruptedException, AWTException {
-        //punch u i
-        //kick j k
-        var up = KeyEvent.VK_W;
-        var down = KeyEvent.VK_S;
-        var left = KeyEvent.VK_A;
-        var right = KeyEvent.VK_D;
 
-        var btn1 = KeyEvent.VK_U;
-        var btn2 = KeyEvent.VK_I;
-        var btn3 = KeyEvent.VK_J;
-        var btn4 = KeyEvent.VK_K;
-
-        KeyboardControl key = new KeyboardControl();
-
-
-
-        Thread.sleep(0);
-
-        //for jokes I used Law sample combo 15
-
+    //tekken related
+    public void SampleCombo15MarshallLaw() throws InterruptedException, AWTException {
 
         // -> -> 3+4
         ai.keyPress(right);
@@ -197,7 +205,6 @@ public class KeyboardControl {
         ai.keyPress(right);
         Thread.sleep(50);
         ai.keyRelease(right);
-        System.out.println("fowards");
 
         //-> 3
         Thread.sleep(100);
