@@ -1,4 +1,6 @@
+import java.util.Arrays;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class Lifter {
 
@@ -70,4 +72,5 @@ public class Lifter {
     public String toString() {
         return String.format("%s=%s,%s,%s",name,squat,bench,deadlift);
     }
+
 }

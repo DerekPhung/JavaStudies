@@ -1,6 +1,7 @@
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
@@ -53,6 +54,7 @@ public class DiscordBot extends ListenerAdapter {
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
 
+
         String message = event.getMessage().getContentRaw();
         String username = event.getAuthor().getName();
         System.out.println(message);
@@ -86,7 +88,39 @@ public class DiscordBot extends ListenerAdapter {
         }
 
 
+        // purging command (>delete: 50) will delete 50 messages
+        if(message.toLowerCase().startsWith("delete: ")){
+            event.getMessage().delete();
+            try{
+                int num = Integer.parseInt(message.split(" ")[1]) + 1;
+                if(num < 1 || num > 100){
+                    event.getMessage().reply("can only be between 1 - 98").queue();
+                    return;
+                }
+                //this grabs the history of each messages on the channel
+                List<Message> msgList = event
+                        .getMessage()
+                        .getChannel()
+                        .getHistory()
+                        .retrievePast(num)
+                        .complete();
 
+                System.out.println(msgList);
+
+                event.getTextChannel().deleteMessages(msgList).queue();
+                event.getChannel()
+                        .sendMessage (event.getAuthor().getName() + " " +(num-1) + " messages deleted")
+                        .queue();
+                return;
+
+            }catch (Exception e){
+                event.getMessage().reply("Bad! Human Bad!").queue();
+                e.printStackTrace();
+            }
+
+        }
+
+        // checking other people's stats
         if(message.startsWith("check ")){
             try{
                 String otherUser = message.split(" ")[1];
@@ -97,6 +131,7 @@ public class DiscordBot extends ListenerAdapter {
             }
         }
 
+        // checking your own stats
         if(message.startsWith("check")){
             event.getMessage().reply(weightUpdate("checkStats",username,message)).queue();
         }
@@ -202,17 +237,18 @@ public class DiscordBot extends ListenerAdapter {
     // a message about each feature the bot has
     public String help(){
         return "```prefix is > \n" +
-                "(aboutMe) to read random stuff\n" +
-                "(bench: number) your bench to update your bench\n" +
-                "(squat: number) your squat to update your squat\n" +
-                "(deadlift: number) your deadlift to udpate your deadlift\n" +
-                "(checkStats) to check your own stats\n" +
-                "(checkBench) to check your bench\n" +
-                "(checkSquat) to check your squats\n" +
-                "(checkDeadlift) to check your deadlift\n" +
-                "(checkTotal) to check your total\n" +
-                "(check username) to check someone's stats\n" +
-                "(postAll) to show everybody in the database```";
+                "(>aboutMe) to read random stuff\n" +
+                "(>bench: number) your bench to update your bench\n" +
+                "(>squat: number) your squat to update your squat\n" +
+                "(>deadlift: number) your deadlift to udpate your deadlift\n" +
+                "(>checkStats) to check your own stats\n" +
+                "(>checkBench) to check your bench\n" +
+                "(>checkSquat) to check your squats\n" +
+                "(>checkDeadlift) to check your deadlift\n" +
+                "(>checkTotal) to check your total\n" +
+                "(>check username) to check someone's stats\n" +
+                "(>postAll) to show everybody in the database\n" +
+                "(>delete: num) will purge the number of messages```";
     }
 
     // a message from the bot creator

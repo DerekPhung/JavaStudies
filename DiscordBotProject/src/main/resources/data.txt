@@ -5,4 +5,5 @@ TubbieTubTub=335,295,410
 CapriSunTheGawd=555,345,620
 Hubris=205,125,185
 ChckenNuggetz=425,290,425
-FluffyWin 🍵=335,315,385
+bubbleface=70,40,40
+FluffyWin 🍵=315,315,315
