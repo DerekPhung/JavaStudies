@@ -11,7 +11,7 @@ import javax.swing.*;
 
 import java.awt.*;
 
-import static org.bytedeco.opencv.global.opencv_core.cvFlip;
+import static org.bytedeco.opencv.global.opencv_core.*;
 import static org.bytedeco.opencv.helper.opencv_imgcodecs.cvSaveImage;
 
 public class WebcamControl implements Runnable {
@@ -27,9 +27,11 @@ public class WebcamControl implements Runnable {
 
     @Override
     public void run() {
+
         FrameGrabber grabber = new VideoInputFrameGrabber(1);
 
-        int i=0;
+
+        int i = 0;
         try {
             grabber.start();
             IplImage img;
@@ -48,7 +50,7 @@ public class WebcamControl implements Runnable {
                 //Thread.sleep(INTERVAL);
             }
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
     }
 
