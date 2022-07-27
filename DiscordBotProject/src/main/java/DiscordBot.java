@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.jetbrains.annotations.NotNull;
 
 import javax.security.auth.login.LoginException;
@@ -23,17 +24,6 @@ public class DiscordBot extends ListenerAdapter {
     static Path dataLog = Paths.get("src/main/resources/data.txt");
 
 
-
-    //main
-    public static void main(String[] args) throws LoginException {
-
-        String token = io.readFromFile(tokenPath).get(0);
-
-        JDA bot = JDABuilder.createDefault(token)
-                .setActivity(Activity.watching("Buff Beef Boys"))
-                .addEventListeners(new DiscordBot())
-                .build();
-    }
 
     //
     public void convertTObjectArrayList(){
@@ -107,7 +97,11 @@ public class DiscordBot extends ListenerAdapter {
 
                 System.out.println(msgList);
 
-                event.getTextChannel().deleteMessages(msgList).queue();
+                event.getChannel().purgeMessages(msgList);
+
+                //legacy code below
+                //event.getTextChannel().deleteMessages(msgList).queue();
+
                 event.getChannel()
                         .sendMessage (event.getAuthor().getName() + " " +(num-1) + " messages deleted")
                         .queue();
@@ -263,5 +257,15 @@ public class DiscordBot extends ListenerAdapter {
                 "hopefully when I finally get my hands on raspberry pi but will be up consistently```";
     }
 
+    //main
+    public static void main(String[] args) throws LoginException {
 
+        String token = io.readFromFile(tokenPath).get(0);
+
+        JDA bot = JDABuilder.createDefault(token)
+                //.enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
+                .setActivity(Activity.watching("Buff Beef Boys"))
+                .addEventListeners(new DiscordBot())
+                .build();
+    }
 }
