@@ -1,0 +1,9 @@
+rocketinferno=185,135,325
+Edgarey=405,315,405
+Hamtaro42=185,165,245
+TubbieTubTub=335,295,410
+CapriSunTheGawd=555,345,635
+Hubris=205,125,185
+ChckenNuggetz=425,290,425
+bubbleface=70,40,40
+FluffyWin 🍵=315,315,315

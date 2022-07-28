@@ -3,15 +3,6 @@
 src/main/resources/token.txt
 build/resources/main/token.txt
 
-##############################
-## Gradle
-##############################
-bin/
-build/
-.gradle
-.gradletasknamecache
-gradle-app.setting
-!gradle-wrapper.jar
 
 ##############################
 ## IntelliJ
